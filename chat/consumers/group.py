@@ -16,7 +16,7 @@ class GroupChatConsumer(BaseChatConsumer):
         await self._send_message(data, event=event['event'])
 
     async def event_group_create(self, event):
-        name = event['data'].get('name')
+        name = event['data'].get('name')  # check if user pass group name
         if not name:
             return await self._throw_error({'detail': 'Missing group name'}, event=event['event'])
         data = await self.group_create(self.scope['user'])
@@ -26,7 +26,7 @@ class GroupChatConsumer(BaseChatConsumer):
     def group_list(self, user):
         # get queryset
         group_ids = GroupParticipant.objects.filter(user=user).value_list('group', flat=True)
-        # qs to list of
+        # qs to list of group ids
         group_ids = list(group_ids)
 
         res = []

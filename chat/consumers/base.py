@@ -6,7 +6,7 @@ class BaseChatConsumer(AsyncJsonWebsocketConsumer):
     #msg from user>reddis>receive_json>_group_send>channel_layer>response_proxy>to all users in group with name self.channel
     async def _group_send(self, data, event=None):
         data = {'type': 'response.proxy', 'data': data, 'event': event}
-        await self.channel_layer.group_send(self.channel, data)  # self.channel ints group name
+        await self.channel_layer.group_send(self.channel, data)  # self.channel its group name
 
     async def response_proxy(self, event):
         await self._send_message(event['data'], event=event.get('event'))
