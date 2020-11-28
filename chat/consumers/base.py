@@ -1,7 +1,7 @@
 from channels.generic.websocket import AsyncJsonWebsocketConsumer
 
 
-class BaseChatCinsumer(AsyncJsonWebsocketConsumer):
+class BaseChatConsumer(AsyncJsonWebsocketConsumer):
 
     #msg from user>reddis>receive_json>_group_send>channel_layer>response_proxy>to all users in group with name self.channel
     async def _group_send(self, data, event=None):
