@@ -5,11 +5,11 @@ from .base import BaseChatConsumer
 from ..models import ChatGroup, GroupParticipant, ChatMessage
 
 
-class ChatCunsumer(BaseChatConsumer):
+class ChatConsumer(BaseChatConsumer):
     # work with channel layers
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.group_id = self.scope['kwargs']['group_id']  # from routing file
+        self.group_id = self.scope['url_route']['kwargs']['group_id']  # from routing file
         self.group = None  # group object
         self.participants = []
         self.channel = f'group_{self.group_id}'
@@ -21,7 +21,7 @@ class ChatCunsumer(BaseChatConsumer):
             await self._throw_error({'detail': 'Group not found'})
             await self.close()
             return
-        participants = self.get_participants()
+        participants = await self.get_participants()
         if self.scope['user'].id not in participants:
             await self._throw_error({'detail': 'Access denied'})
             await self.close()
@@ -43,9 +43,10 @@ class ChatCunsumer(BaseChatConsumer):
         user_id = event['data'].get('user_id')
         if not user_id:
             await self._throw_error({'detail': 'Missing user id'}, event=event['event'])
-        participants = self.add_participant(user_id)
+        await self.add_participant(user_id)
+        participants = await self.get_participants()
         #  send message to user
-        return await self._send_message(participants, event=event['event'])
+        await self._send_message(participants, event=event['event'])
 
     async def event_send_message(self, event):  # in event by key 'data' get dict with user message
         message = event['data'].get('message')
@@ -53,7 +54,11 @@ class ChatCunsumer(BaseChatConsumer):
             await self._throw_error({'detail': 'Missing message'}, event=event['event'])
 
         await self.save_message(message, self.scope['user'])
-        return await self._group_send(event['data'], event=event['event'])
+        data = {
+            'username': self.scope['user'].username,
+            'message': event['data']['message'],
+        }
+        return await self._group_send(data)
 
     async def event_list_messages(self, event):
         messages = await self.get_messages()
@@ -80,9 +85,6 @@ class ChatCunsumer(BaseChatConsumer):
         if user:
             participant, _ = GroupParticipant.objects.get_or_create(group=self.group, user=user).first()
 
-        participants = self.get_participants()
-        return participants
-
     @database_sync_to_async
     def save_message(self, message, user):
         m = ChatMessage(user=user, group=self.group, message=message)
@@ -90,7 +92,7 @@ class ChatCunsumer(BaseChatConsumer):
 
     @database_sync_to_async
     def get_messages(self):
-        messages = ChatMessage.objects.select_related('user').filter(group=self.group).order_by('-id')
+        messages = ChatMessage.objects.select_related('user').filter(group=self.group).order_by('id')
         res = []
         for message in messages:
             res.append({

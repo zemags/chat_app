@@ -7,6 +7,22 @@ from .base import BaseChatConsumer
 
 
 class GroupChatConsumer(BaseChatConsumer):
+    # def __init__(self, *args, **kwargs):
+    #     super().__init__(*args, **kwargs)
+    #     self.channel = None
+    #
+    # async def connect(self):
+    #     await super().connect()
+    #     self.channel = ChatGroup.user_channel_name(self.scope['user'].id)
+    #     await self.channel_layer.group_add(self.channel, self.channel_name)
+    #
+    # async def disconnect(self, code):
+    #     await self.channel_layer.group_discard(self.channel, self.channel_name)
+    #     await super().disconnect(code=code)
+    #
+    # async def send_notice(self, event):
+    #     await self._send_message(event['data']['data'], event=event['data']['event'])
+
     async def event_group_list(self, event):
         data = await self.group_list(self.scope['user'])
         await self._send_message(data, event=event['event'])
@@ -19,7 +35,7 @@ class GroupChatConsumer(BaseChatConsumer):
         name = event['data'].get('name')  # check if user pass group name
         if not name:
             return await self._throw_error({'detail': 'Missing group name'}, event=event['event'])
-        data = await self.group_create(self.scope['user'])
+        data = await self.group_create(name, self.scope['user'])
         await self._send_message(data, event=event['event'])
 
     @database_sync_to_async

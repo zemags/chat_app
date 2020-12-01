@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'channels',
     'chat',
+    'my_chat'
 ]
 
 MIDDLEWARE = [
@@ -122,6 +123,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+SESSION_COOKIE_SAMESITE = None
+
 # CHANNEL_LAYERS fully asynchronously
 # to call in sync code need to import "from asgiref.sync import async_to_sync"
 # then call like: async_to_sync(channel_layer.group_send)('chat', {})
@@ -133,3 +138,16 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+EMAIL_HOST_USER = None
+EMAIL_HOST = None
+EMAIL_USE_TLS = None
+EMAIL_HOST_PASSWORD = None
+EMAIL_PORT = None
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+#
+# try:
+#     from .local import *
+# except ImportError:
+#     pass

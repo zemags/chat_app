@@ -8,7 +8,7 @@ class ChatGroup(models.Model):
     @property
     def link(self):
         channel_name = self.channel_name(self.id)
-        return f'/ws/chat/{channel_name}/'
+        return f'/ws/chat/{self.id}/'
 
     def __str__(self):
         return self.name
@@ -17,6 +17,10 @@ class ChatGroup(models.Model):
     def channel_name(cls, group_id):
         # group_name for channel_layer like group_{group_id}
         return f'group_{group_id}'
+
+    @classmethod
+    def user_channel_name(cls, user_id):
+        return f'user_{user_id}'
 
 
 class GroupParticipant(models.Model):
